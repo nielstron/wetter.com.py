@@ -6,6 +6,7 @@ import re
 
 LOCATION_URL = "https://sayt.wettercomassets.com/suggest/search/{}"
 WEATHER_URL = "https://www.wetter.com/deutschland/{}.html"
+WEATHER_TOMORROW_URL = "https://www.wetter.com/wetter_aktuell/wettervorhersage/morgen/deutschland/{}.html"
 
 plz = "85540"
 r = requests.get(LOCATION_URL.format(plz))
@@ -13,6 +14,7 @@ res = json.loads(r.content)
 first_suggestion = res["suggest"]["location"][0]["options"][0]["_source"]
 name = first_suggestion["name"]
 loc_id = first_suggestion["originId"]
+print("Result for {}".format(name))
 
 r = requests.get(WEATHER_URL.format(loc_id))
 dom = AdvancedHTMLParser()
@@ -35,3 +37,11 @@ wind = list(map(lambda x: (re.findall("[NOSW]{1,2}", x.innerText)[0], int(re.fin
 print("Wind forecast, hourly from now, Direction + speed km/h")
 print(wind)
 
+r = requests.get(WEATHER_TOMORROW_URL.format(loc_id))
+dom = AdvancedHTMLParser()
+dom.parseStr(r.content)
+sun_hours = dom.getElementsByClassName("icon-sun_hours")[0].nextElementSibling
+sun_hours = sun_hours.innerText
+sun_hours = int(re.findall("\d+", sun_hours)[0])
+print("Sun hours for the next day")
+print(sun_hours)
